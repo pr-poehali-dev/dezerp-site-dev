@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
+const AUTH_URL = "https://functions.poehali.dev/569a5b55-77b1-4b70-b78b-466210497f0b";
+
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/365970a3-3a96-4709-bf03-6f332841bb5d/files/5bc0fec9-6709-4a9a-90b1-82425d780664.jpg";
 
 const LEADERS = [
@@ -37,6 +39,11 @@ export default function Index() {
   const [activeSection, setActiveSection] = useState<Section>("home");
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{id: number; nickname: string; email: string} | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [authSuccess, setAuthSuccess] = useState("");
+  const [formData, setFormData] = useState({ nickname: "", email: "", password: "", password2: "" });
 
   const navItems: { id: Section; label: string }[] = [
     { id: "home", label: "Главная" },
@@ -47,6 +54,52 @@ export default function Index() {
   ];
 
   const nav = (s: Section) => { setActiveSection(s); setMobileMenu(false); };
+
+  const openAuth = (mode: "login" | "register") => {
+    setAuthMode(mode);
+    setAuthError("");
+    setAuthSuccess("");
+    setFormData({ nickname: "", email: "", password: "", password2: "" });
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+    setAuthSuccess("");
+
+    if (authMode === "register") {
+      if (formData.password !== formData.password2) {
+        setAuthError("Пароли не совпадают");
+        return;
+      }
+    }
+
+    setAuthLoading(true);
+    try {
+      const res = await fetch(AUTH_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: authMode,
+          nickname: formData.nickname,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setAuthError(data.error || "Произошла ошибка");
+      } else {
+        setCurrentUser(data.user);
+        setAuthSuccess(authMode === "register" ? `Добро пожаловать, ${data.user.nickname}!` : `С возвращением, ${data.user.nickname}!`);
+        setTimeout(() => { setAuthMode(null); setAuthSuccess(""); }, 1500);
+      }
+    } catch {
+      setAuthError("Ошибка сети, попробуйте ещё раз");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen grid-bg">
@@ -73,8 +126,17 @@ export default function Index() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <button className="btn-outline text-sm py-2 px-4" onClick={() => setAuthMode("login")}>Войти</button>
-            <button className="btn-red text-sm py-2 px-4" onClick={() => setAuthMode("register")}>Регистрация</button>
+            {currentUser ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-300" style={{ fontFamily: "Oswald" }}>👤 {currentUser.nickname}</span>
+                <button className="btn-outline text-sm py-2 px-4" onClick={() => setCurrentUser(null)}>Выйти</button>
+              </div>
+            ) : (
+              <>
+                <button className="btn-outline text-sm py-2 px-4" onClick={() => openAuth("login")}>Войти</button>
+                <button className="btn-red text-sm py-2 px-4" onClick={() => openAuth("register")}>Регистрация</button>
+              </>
+            )}
           </div>
 
           <button className="md:hidden text-white" onClick={() => setMobileMenu(!mobileMenu)}>
@@ -94,8 +156,14 @@ export default function Index() {
                 </button>
               ))}
               <div className="flex gap-3 pt-2">
-                <button className="btn-outline text-sm py-2 px-4 flex-1" onClick={() => { setAuthMode("login"); setMobileMenu(false); }}>Войти</button>
-                <button className="btn-red text-sm py-2 px-4 flex-1" onClick={() => { setAuthMode("register"); setMobileMenu(false); }}>Регистрация</button>
+                {currentUser ? (
+                  <button className="btn-outline text-sm py-2 px-4 flex-1" onClick={() => { setCurrentUser(null); setMobileMenu(false); }}>Выйти ({currentUser.nickname})</button>
+                ) : (
+                  <>
+                    <button className="btn-outline text-sm py-2 px-4 flex-1" onClick={() => { openAuth("login"); setMobileMenu(false); }}>Войти</button>
+                    <button className="btn-red text-sm py-2 px-4 flex-1" onClick={() => { openAuth("register"); setMobileMenu(false); }}>Регистрация</button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -122,7 +190,7 @@ export default function Index() {
 
               <div className="flex mb-6" style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
                 {(["login", "register"] as const).map((m) => (
-                  <button key={m} onClick={() => setAuthMode(m)}
+                  <button key={m} onClick={() => openAuth(m)}
                     className="flex-1 py-2 text-sm uppercase tracking-wider transition-colors"
                     style={{ fontFamily: "Oswald", borderBottom: authMode === m ? "2px solid var(--red)" : "2px solid transparent", color: authMode === m ? "white" : "rgba(255,255,255,0.4)" }}>
                     {m === "login" ? "Войти" : "Регистрация"}
@@ -130,31 +198,50 @@ export default function Index() {
                 ))}
               </div>
 
-              <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
-                {authMode === "register" && (
-                  <div>
-                    <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Никнейм</label>
-                    <input type="text" placeholder="YourNickname" />
-                  </div>
-                )}
-                <div>
-                  <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Email</label>
-                  <input type="email" placeholder="email@example.com" />
+              {authSuccess ? (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">✅</div>
+                  <p className="text-white font-semibold" style={{ fontFamily: "Oswald", fontSize: "1.2rem" }}>{authSuccess}</p>
                 </div>
-                <div>
-                  <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Пароль</label>
-                  <input type="password" placeholder="••••••••" />
-                </div>
-                {authMode === "register" && (
+              ) : (
+                <form className="flex flex-col gap-4" onSubmit={handleAuthSubmit}>
+                  {authMode === "register" && (
+                    <div>
+                      <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Никнейм</label>
+                      <input type="text" placeholder="YourNickname" value={formData.nickname}
+                        onChange={(e) => setFormData(f => ({ ...f, nickname: e.target.value }))} required />
+                    </div>
+                  )}
                   <div>
-                    <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Повторите пароль</label>
-                    <input type="password" placeholder="••••••••" />
+                    <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Email</label>
+                    <input type="email" placeholder="email@example.com" value={formData.email}
+                      onChange={(e) => setFormData(f => ({ ...f, email: e.target.value }))} required />
                   </div>
-                )}
-                <button type="submit" className="btn-red w-full mt-2">
-                  {authMode === "login" ? "Войти" : "Зарегистрироваться"}
-                </button>
-              </form>
+                  <div>
+                    <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Пароль</label>
+                    <input type="password" placeholder="••••••••" value={formData.password}
+                      onChange={(e) => setFormData(f => ({ ...f, password: e.target.value }))} required />
+                  </div>
+                  {authMode === "register" && (
+                    <div>
+                      <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Повторите пароль</label>
+                      <input type="password" placeholder="••••••••" value={formData.password2}
+                        onChange={(e) => setFormData(f => ({ ...f, password2: e.target.value }))} required />
+                    </div>
+                  )}
+                  {authError && (
+                    <div className="text-sm py-2 px-3 flex items-center gap-2"
+                      style={{ background: "rgba(230,48,48,0.12)", border: "1px solid rgba(230,48,48,0.3)", color: "#ff6b6b" }}>
+                      <Icon name="AlertCircle" size={14} />
+                      {authError}
+                    </div>
+                  )}
+                  <button type="submit" className="btn-red w-full mt-2" disabled={authLoading}
+                    style={{ opacity: authLoading ? 0.7 : 1, cursor: authLoading ? "not-allowed" : "pointer" }}>
+                    {authLoading ? "Загрузка..." : authMode === "login" ? "Войти" : "Зарегистрироваться"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>
@@ -205,28 +292,6 @@ export default function Index() {
               </div>
             </section>
 
-            {/* STATS */}
-            <section className="py-14" style={{ background: "var(--surface)", borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-              <div className="max-w-6xl mx-auto px-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {[
-                    { val: "247", label: "В сети", icon: "Users", c: "var(--red)" },
-                    { val: "12K+", label: "Зарегистрировано", icon: "Trophy", c: "var(--blue)" },
-                    { val: "3 года", label: "Работаем", icon: "Star", c: "var(--red)" },
-                    { val: "99.8%", label: "Аптайм", icon: "Zap", c: "var(--blue)" },
-                  ].map((s, i) => (
-                    <div key={i} className="text-center p-4">
-                      <div className="flex justify-center mb-2">
-                        <Icon name={s.icon} size={26} style={{ color: s.c }} />
-                      </div>
-                      <div className="text-3xl font-bold mb-1" style={{ fontFamily: "Oswald", color: s.c }}>{s.val}</div>
-                      <div className="text-xs text-gray-500 uppercase tracking-wider" style={{ fontFamily: "Oswald" }}>{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
             {/* FEATURES */}
             <section className="py-24 max-w-6xl mx-auto px-4">
               <div className="text-center mb-16">
@@ -259,7 +324,7 @@ export default function Index() {
                 <h2 className="section-title text-white mb-4">Готов начать?</h2>
                 <p className="text-gray-400 mb-8">Регистрация займёт меньше минуты. Сервер ждёт тебя прямо сейчас.</p>
                 <div className="flex justify-center flex-wrap gap-4">
-                  <button className="btn-red px-10 py-4 text-lg" onClick={() => setAuthMode("register")}>Зарегистрироваться</button>
+                  <button className="btn-red px-10 py-4 text-lg" onClick={() => openAuth("register")}>Зарегистрироваться</button>
                   <button className="btn-blue px-10 py-4 text-lg" onClick={() => nav("download")}>Скачать клиент</button>
                 </div>
               </div>

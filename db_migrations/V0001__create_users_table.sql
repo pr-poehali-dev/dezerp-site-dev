@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS t_p11831203_dezerp_site_dev.users (
+  id SERIAL PRIMARY KEY,
+  nickname VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
