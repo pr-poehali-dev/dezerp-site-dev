@@ -574,6 +574,44 @@ export default function Index() {
                 </div>
               ))}
             </div>
+            {/* Гоночные машины */}
+            <div className="mt-14">
+              <h3 className="text-white text-2xl font-bold mb-2 animate-fade-in-up" style={{ fontFamily: "Oswald", opacity: 0 }}>
+                🏎️ Гоночные <span style={{ color: "var(--red)" }}>автомобили</span>
+              </h3>
+              <div className="divider-red mb-8"></div>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  { name: "Гоночная BMW", icon: "🏎️", price: "100₽", desc: "Спортивный болид BMW для уличных гонок. Высокая скорость и управляемость.", color: "var(--blue)", badge: null },
+                  { name: "Гоночный Болид", icon: "🚀", price: "1000₽", desc: "Профессиональный гоночный болид Формулы. Максимальная скорость на трассе.", color: "#ffd700", badge: "ТОП" },
+                  { name: "Гоночный Джип", icon: "🚙", price: "500₽", desc: "Мощный внедорожник для гонок по бездорожью и городским улицам.", color: "var(--red)", badge: null },
+                ].map((car, i) => (
+                  <div key={car.name}
+                    className="relative p-6 animate-fade-in-up card-hover"
+                    style={{ background: "var(--surface)", border: `1px solid ${car.color}40`, animationDelay: `${i * 0.1}s`, opacity: 0 }}>
+                    {car.badge && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs uppercase tracking-wider px-4 py-1"
+                        style={{ background: "#ffd700", fontFamily: "Oswald", color: "#000" }}>
+                        {car.badge}
+                      </div>
+                    )}
+                    <div className="text-5xl text-center mb-4">{car.icon}</div>
+                    <h4 className="text-center text-xl mb-1 text-white" style={{ fontFamily: "Oswald" }}>{car.name}</h4>
+                    <div className="text-center text-3xl font-bold mb-3" style={{ fontFamily: "Oswald", color: car.color }}>
+                      {car.price}
+                    </div>
+                    <p className="text-gray-400 text-sm text-center mb-6" style={{ lineHeight: 1.6 }}>{car.desc}</p>
+                    <button
+                      className="w-full py-2 text-sm uppercase tracking-wider font-semibold transition-all"
+                      style={{ fontFamily: "Oswald", background: `${car.color}18`, border: `1px solid ${car.color}60`, color: car.color, cursor: "pointer" }}
+                      onClick={() => alert("Система оплаты будет настроена администратором")}>
+                      Купить
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <p className="text-center text-gray-600 text-xs mt-10" style={{ fontFamily: "Oswald" }}>
               Привилегии активируются автоматически после оплаты. Возврат средств не предусмотрен.
             </p>
