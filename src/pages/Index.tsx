@@ -606,41 +606,12 @@ export default function Index() {
               ))}
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 mb-8">
+            <div className="animate-fade-in-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
               <a href="https://fivem.net" target="_blank" rel="noopener noreferrer"
-                className="btn-red flex items-center justify-center gap-3 py-4 no-underline animate-fade-in-up"
-                style={{ animationDelay: "0.4s", opacity: 0 }}>
+                className="btn-red flex items-center justify-center gap-3 py-4 no-underline">
                 <Icon name="Download" size={20} />
                 Скачать FiveM
               </a>
-              <button className="btn-blue flex items-center justify-center gap-3 py-4 animate-fade-in-up"
-                style={{ animationDelay: "0.5s", opacity: 0 }}
-                onClick={() => alert("Файл правил будет добавлен администратором")}>
-                <Icon name="FileText" size={20} />
-                Правила (PDF)
-              </button>
-            </div>
-
-            <div className="p-5 animate-fade-in-up"
-              style={{ background: "rgba(230,48,48,0.07)", border: "1px solid rgba(230,48,48,0.22)", animationDelay: "0.6s", opacity: 0 }}>
-              <h3 className="text-white font-semibold mb-3 flex items-center gap-2" style={{ fontFamily: "Oswald" }}>
-                <Icon name="Server" size={18} style={{ color: "var(--red)" }} />
-                Данные сервера
-              </h3>
-              <div className="grid sm:grid-cols-2 gap-0">
-                {[
-                  { label: "IP сервера", val: "connect.dezerp.ru" },
-                  { label: "Версия", val: "FiveM (последняя)" },
-                  { label: "Онлайн", val: "247 / 500 слотов" },
-                  { label: "Discord", val: "discord.gg/dezerp" },
-                ].map((info) => (
-                  <div key={info.label} className="flex justify-between items-center px-0 py-2"
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                    <span className="text-gray-400 text-sm">{info.label}</span>
-                    <span className="text-white text-sm font-medium" style={{ fontFamily: "Oswald" }}>{info.val}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         )}
