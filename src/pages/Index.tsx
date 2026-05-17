@@ -5,18 +5,6 @@ const AUTH_URL = "https://functions.poehali.dev/569a5b55-77b1-4b70-b78b-46621049
 
 const HERO_IMAGE = "https://cdn.poehali.dev/projects/365970a3-3a96-4709-bf03-6f332841bb5d/files/5bc0fec9-6709-4a9a-90b1-82425d780664.jpg";
 
-const LEADERS = [
-  { rank: 1, name: "DarkWolf99", level: 87, playtime: "1240ч", role: "Администратор", badge: "rank-admin", icon: "👑" },
-  { rank: 2, name: "ShadowKing", level: 75, playtime: "980ч", role: "Модератор", badge: "rank-moder", icon: "🔥" },
-  { rank: 3, name: "NeonRider", level: 71, playtime: "870ч", role: "VIP", badge: "rank-vip", icon: "⚡" },
-  { rank: 4, name: "CityBoss", level: 66, playtime: "740ч", role: "VIP", badge: "rank-vip", icon: "💎" },
-  { rank: 5, name: "StreetKing", level: 60, playtime: "690ч", role: "Игрок", badge: "rank-player", icon: "🎯" },
-  { rank: 6, name: "RedPhoenix", level: 55, playtime: "610ч", role: "Игрок", badge: "rank-player", icon: "🎯" },
-  { rank: 7, name: "BlueStorm", level: 51, playtime: "580ч", role: "Игрок", badge: "rank-player", icon: "🎯" },
-  { rank: 8, name: "GhostRide", level: 48, playtime: "520ч", role: "Игрок", badge: "rank-player", icon: "🎯" },
-  { rank: 9, name: "NightCrawler", level: 44, playtime: "470ч", role: "Игрок", badge: "rank-player", icon: "🎯" },
-  { rank: 10, name: "UrbanHero", level: 41, playtime: "420ч", role: "Игрок", badge: "rank-player", icon: "🎯" },
-];
 
 const RULES = [
   { id: 1, title: "Уважение к игрокам", text: "Запрещено оскорблять, унижать и угрожать другим игрокам. Относитесь к окружающим так, как хотите, чтобы относились к вам." },
@@ -33,13 +21,13 @@ const DONATES = [
   { name: "Элитный", price: "999₽", glow: "glow-red", features: ["Всё из Продвинутого", "Личный особняк", "Охрана (2 NPC)", "+50% опыта", "Уникальный скин", "Закрытые зоны"], icon: "👑", popular: false },
 ];
 
-type Section = "home" | "rules" | "leaderboard" | "donate" | "download";
+type Section = "home" | "rules" | "profile" | "donate" | "download";
 
 export default function Index() {
   const [activeSection, setActiveSection] = useState<Section>("home");
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{id: number; nickname: string; email: string} | null>(() => {
+  const [currentUser, setCurrentUser] = useState<{id: number; nickname: string; email: string; gender?: string; created_at?: string} | null>(() => {
     try {
       const saved = localStorage.getItem("dezerp_user");
       return saved ? JSON.parse(saved) : null;
@@ -61,9 +49,9 @@ export default function Index() {
   const navItems: { id: Section; label: string }[] = [
     { id: "home", label: "Главная" },
     { id: "rules", label: "Правила" },
-    { id: "leaderboard", label: "Рейтинг" },
     { id: "donate", label: "Донат" },
     { id: "download", label: "Скачать" },
+    { id: "profile", label: "Профиль" },
   ];
 
   const nav = (s: Section) => { setActiveSection(s); setMobileMenu(false); };
@@ -424,73 +412,74 @@ export default function Index() {
           </div>
         )}
 
-        {/* ─── LEADERBOARD ─── */}
-        {activeSection === "leaderboard" && (
-          <div className="min-h-screen max-w-4xl mx-auto px-4 py-24">
+        {/* ─── PROFILE ─── */}
+        {activeSection === "profile" && (
+          <div className="min-h-screen max-w-2xl mx-auto px-4 py-24">
             <div className="mb-12">
               <h2 className="section-title text-white mb-4 animate-fade-in-up">
-                Таблица <span style={{ color: "var(--red)" }}>лидеров</span>
+                Мой <span style={{ color: "var(--red)" }}>профиль</span>
               </h2>
               <div className="divider-red mb-6"></div>
-              <p className="text-gray-400 animate-fade-in-up delay-100">Топ игроков по уровню и времени на сервере. Обновляется каждый час.</p>
             </div>
 
-            {/* Podium */}
-            <div className="grid grid-cols-3 gap-3 mb-10">
-              {[LEADERS[1], LEADERS[0], LEADERS[2]].map((p, i) => {
-                const pos = [2, 1, 3][i];
-                const ht = ["h-28", "h-36", "h-24"][i];
-                const cl = ["var(--blue)", "var(--red)", "#ffd700"][i];
-                return (
-                  <div key={p.rank} className="flex flex-col items-center">
-                    <div className="text-2xl mb-1">{p.icon}</div>
-                    <div className="text-sm font-bold mb-1" style={{ fontFamily: "Oswald", color: cl }}>{p.name}</div>
-                    <div className="text-xs text-gray-400 mb-2">Ур. {p.level}</div>
-                    <div className={`w-full ${ht} flex items-center justify-center text-2xl font-bold`}
-                      style={{ background: `${cl}18`, border: `1px solid ${cl}45`, fontFamily: "Oswald", color: cl }}>
-                      #{pos}
+            {!currentUser ? (
+              <div className="p-10 text-center animate-fade-in-up"
+                style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <div className="text-5xl mb-4">🔒</div>
+                <h3 className="text-white text-xl mb-2" style={{ fontFamily: "Oswald" }}>Требуется авторизация</h3>
+                <p className="text-gray-400 text-sm mb-6">Войдите или зарегистрируйтесь, чтобы просмотреть профиль</p>
+                <div className="flex justify-center gap-3">
+                  <button className="btn-outline px-6 py-2" onClick={() => openAuth("login")}>Войти</button>
+                  <button className="btn-red px-6 py-2" onClick={() => openAuth("register")}>Регистрация</button>
+                </div>
+              </div>
+            ) : (
+              <div className="animate-fade-in-up flex flex-col gap-5">
+                {/* Аватар и никнейм */}
+                <div className="p-8 flex items-center gap-6"
+                  style={{ background: "var(--surface)", border: "1px solid rgba(230,48,48,0.2)" }}>
+                  <div className="w-20 h-20 flex items-center justify-center text-4xl flex-shrink-0"
+                    style={{ background: "rgba(230,48,48,0.1)", border: "2px solid rgba(230,48,48,0.3)" }}>
+                    {currentUser.gender === "female" ? "👩" : "👨"}
+                  </div>
+                  <div>
+                    <div className="text-white text-2xl font-bold" style={{ fontFamily: "Oswald" }}>{currentUser.nickname}</div>
+                    <div className="text-gray-400 text-sm mt-1">{currentUser.email}</div>
+                    <div className="mt-2 inline-block text-xs uppercase tracking-wider px-3 py-1"
+                      style={{ fontFamily: "Oswald", background: "rgba(230,48,48,0.12)", border: "1px solid rgba(230,48,48,0.3)", color: "var(--red)" }}>
+                      Игрок
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
 
-            {/* Table */}
-            <div style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div className="grid grid-cols-12 px-4 py-3 text-xs uppercase tracking-widest text-gray-500"
-                style={{ fontFamily: "Oswald", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                <span className="col-span-1">#</span>
-                <span className="col-span-4">Игрок</span>
-                <span className="col-span-2">Ур.</span>
-                <span className="col-span-3">Время</span>
-                <span className="col-span-2">Ранг</span>
+                {/* Данные */}
+                <div style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  {[
+                    { label: "Никнейм", value: currentUser.nickname, icon: "User" },
+                    { label: "Email", value: currentUser.email, icon: "Mail" },
+                    { label: "Пол персонажа", value: currentUser.gender === "male" ? "Мужской" : currentUser.gender === "female" ? "Женский" : "—", icon: "Users" },
+                    {
+                      label: "Дата регистрации",
+                      value: currentUser.created_at
+                        ? new Date(currentUser.created_at).toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" })
+                        : "—",
+                      icon: "Calendar"
+                    },
+                  ].map((row, i) => (
+                    <div key={i} className="flex items-center gap-4 px-6 py-4"
+                      style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <Icon name={row.icon} size={16} style={{ color: "var(--red)", flexShrink: 0 }} />
+                      <span className="text-gray-400 text-sm w-44 flex-shrink-0" style={{ fontFamily: "Oswald" }}>{row.label}</span>
+                      <span className="text-white text-sm font-medium">{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button className="btn-outline py-3 text-sm" onClick={() => { setCurrentUser(null); setActiveSection("home"); }}>
+                  Выйти из аккаунта
+                </button>
               </div>
-              {LEADERS.map((p, i) => {
-                const topColor = p.rank === 1 ? "230,48,48" : p.rank === 2 ? "37,99,235" : "255,215,0";
-                const numColor = p.rank === 1 ? "var(--red)" : p.rank === 2 ? "var(--blue)" : p.rank === 3 ? "#ffd700" : "rgba(255,255,255,0.25)";
-                return (
-                  <div key={p.rank} className="grid grid-cols-12 px-4 py-4 items-center animate-fade-in-up"
-                    style={{
-                      borderBottom: "1px solid rgba(255,255,255,0.03)",
-                      animationDelay: `${i * 0.05}s`,
-                      opacity: 0,
-                      background: p.rank <= 3 ? `rgba(${topColor},0.05)` : "transparent"
-                    }}>
-                    <span className="col-span-1 font-bold" style={{ fontFamily: "Oswald", color: numColor }}>{p.rank}</span>
-                    <span className="col-span-4 flex items-center gap-2">
-                      <span className="text-lg">{p.icon}</span>
-                      <span className="text-white text-sm font-medium" style={{ fontFamily: "Oswald" }}>{p.name}</span>
-                    </span>
-                    <span className="col-span-2 text-sm font-bold" style={{ color: "var(--blue)", fontFamily: "Oswald" }}>{p.level}</span>
-                    <span className="col-span-3 text-gray-400 text-sm">{p.playtime}</span>
-                    <span className={`col-span-2 text-xs font-medium ${p.badge}`} style={{ fontFamily: "Oswald" }}>{p.role}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="text-center text-gray-600 text-xs mt-6" style={{ fontFamily: "Oswald" }}>
-              Демо-данные. Реальный рейтинг подключит администратор.
-            </p>
+            )}
           </div>
         )}
 

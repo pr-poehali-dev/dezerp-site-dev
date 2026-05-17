@@ -47,7 +47,7 @@ def handler(event: dict, context) -> dict:
         cur = conn.cursor()
         try:
             cur.execute(
-                "INSERT INTO " + SCHEMA + ".users (nickname, email, password_hash, gender) VALUES (%s, %s, %s, %s) RETURNING id, nickname, email, gender",
+                "INSERT INTO " + SCHEMA + ".users (nickname, email, password_hash, gender) VALUES (%s, %s, %s, %s) RETURNING id, nickname, email, gender, created_at",
                 (nickname, email, pw_hash, gender)
             )
             row = cur.fetchone()
@@ -55,7 +55,7 @@ def handler(event: dict, context) -> dict:
             return {
                 "statusCode": 200,
                 "headers": CORS,
-                "body": json.dumps({"ok": True, "user": {"id": row[0], "nickname": row[1], "email": row[2], "gender": row[3]}})
+                "body": json.dumps({"ok": True, "user": {"id": row[0], "nickname": row[1], "email": row[2], "gender": row[3], "created_at": row[4].isoformat() if row[4] else None}})
             }
         except Exception as e:
             conn.rollback()
@@ -78,7 +78,7 @@ def handler(event: dict, context) -> dict:
         conn = get_conn()
         cur = conn.cursor()
         cur.execute(
-            "SELECT id, nickname, email FROM " + SCHEMA + ".users WHERE email = %s AND password_hash = %s",
+            "SELECT id, nickname, email, gender, created_at FROM " + SCHEMA + ".users WHERE email = %s AND password_hash = %s",
             (email, pw_hash)
         )
         row = cur.fetchone()
@@ -91,7 +91,7 @@ def handler(event: dict, context) -> dict:
         return {
             "statusCode": 200,
             "headers": CORS,
-            "body": json.dumps({"ok": True, "user": {"id": row[0], "nickname": row[1], "email": row[2]}})
+            "body": json.dumps({"ok": True, "user": {"id": row[0], "nickname": row[1], "email": row[2], "gender": row[3], "created_at": row[4].isoformat() if row[4] else None}})
         }
 
     return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Неизвестное действие"})}
