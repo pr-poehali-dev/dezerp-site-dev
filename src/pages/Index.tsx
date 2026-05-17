@@ -507,6 +507,35 @@ export default function Index() {
               </p>
             </div>
 
+            {/* DC / Dcoins */}
+            <div className="mb-12 p-6 animate-fade-in-up"
+              style={{ background: "var(--surface)", border: "1px solid rgba(255,215,0,0.25)", opacity: 0 }}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">💰</div>
+                  <div>
+                    <h3 className="text-white text-xl font-bold" style={{ fontFamily: "Oswald" }}>
+                      DC — внутриигровая валюта
+                    </h3>
+                    <p className="text-gray-400 text-sm mt-1">
+                      1 Dcoin = <span className="text-yellow-400 font-semibold">1 рубль</span> · Тратьте на машины, одежду, недвижимость и многое другое
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold" style={{ fontFamily: "Oswald", color: "#ffd700" }}>1 DC</span>
+                    <span className="text-gray-400 text-sm">= 1₽</span>
+                  </div>
+                  <button
+                    className="btn-red px-8 py-2 text-sm"
+                    onClick={() => alert("Система пополнения DC будет настроена администратором")}>
+                    Пополнить DC
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="grid md:grid-cols-3 gap-6">
               {DONATES.map((tier, i) => (
                 <div key={tier.name}
