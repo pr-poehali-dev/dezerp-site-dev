@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 const AUTH_URL = "https://functions.poehali.dev/569a5b55-77b1-4b70-b78b-466210497f0b";
@@ -39,11 +39,24 @@ export default function Index() {
   const [activeSection, setActiveSection] = useState<Section>("home");
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{id: number; nickname: string; email: string} | null>(null);
+  const [currentUser, setCurrentUser] = useState<{id: number; nickname: string; email: string} | null>(() => {
+    try {
+      const saved = localStorage.getItem("dezerp_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authSuccess, setAuthSuccess] = useState("");
   const [formData, setFormData] = useState({ nickname: "", email: "", password: "", password2: "" });
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem("dezerp_user", JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem("dezerp_user");
+    }
+  }, [currentUser]);
 
   const navItems: { id: Section; label: string }[] = [
     { id: "home", label: "Главная" },
