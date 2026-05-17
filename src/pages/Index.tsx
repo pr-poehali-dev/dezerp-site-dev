@@ -48,7 +48,7 @@ export default function Index() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authSuccess, setAuthSuccess] = useState("");
-  const [formData, setFormData] = useState({ nickname: "", email: "", password: "", password2: "" });
+  const [formData, setFormData] = useState({ nickname: "", email: "", password: "", password2: "", gender: "" });
 
   useEffect(() => {
     if (currentUser) {
@@ -85,6 +85,10 @@ export default function Index() {
         setAuthError("Пароли не совпадают");
         return;
       }
+      if (!formData.gender) {
+        setAuthError("Выберите пол персонажа");
+        return;
+      }
     }
 
     setAuthLoading(true);
@@ -97,6 +101,7 @@ export default function Index() {
           nickname: formData.nickname,
           email: formData.email,
           password: formData.password,
+          gender: formData.gender,
         }),
       });
       const data = await res.json();
@@ -219,11 +224,42 @@ export default function Index() {
               ) : (
                 <form className="flex flex-col gap-4" onSubmit={handleAuthSubmit}>
                   {authMode === "register" && (
-                    <div>
-                      <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Никнейм</label>
-                      <input type="text" placeholder="YourNickname" value={formData.nickname}
-                        onChange={(e) => setFormData(f => ({ ...f, nickname: e.target.value }))} required />
-                    </div>
+                    <>
+                      <div>
+                        <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Никнейм</label>
+                        <input type="text" placeholder="YourNickname" value={formData.nickname}
+                          onChange={(e) => setFormData(f => ({ ...f, nickname: e.target.value }))} required />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-400 uppercase tracking-wider mb-2 block" style={{ fontFamily: "Oswald" }}>Пол персонажа</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[
+                            { val: "male", label: "Мужской", icon: "👨" },
+                            { val: "female", label: "Женский", icon: "👩" },
+                          ].map((g) => (
+                            <button
+                              key={g.val}
+                              type="button"
+                              onClick={() => setFormData(f => ({ ...f, gender: g.val }))}
+                              className="flex items-center justify-center gap-2 py-3 text-sm transition-all"
+                              style={{
+                                fontFamily: "Oswald",
+                                border: formData.gender === g.val ? "2px solid var(--red)" : "1px solid rgba(255,255,255,0.12)",
+                                background: formData.gender === g.val ? "rgba(230,48,48,0.12)" : "rgba(255,255,255,0.03)",
+                                color: formData.gender === g.val ? "white" : "rgba(255,255,255,0.5)",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <span className="text-lg">{g.icon}</span>
+                              {g.label}
+                            </button>
+                          ))}
+                        </div>
+                        {authMode === "register" && !formData.gender && (
+                          <p className="text-xs text-gray-600 mt-1" style={{ fontFamily: "Oswald" }}>Выберите пол персонажа</p>
+                        )}
+                      </div>
+                    </>
                   )}
                   <div>
                     <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block" style={{ fontFamily: "Oswald" }}>Email</label>
@@ -533,7 +569,7 @@ export default function Index() {
                 { step: 1, title: "Скачай GTA V (Steam или Rockstar)", text: "Необходима лицензионная версия GTA V. Пиратские версии не поддерживаются.", color: "var(--red)" },
                 { step: 2, title: "Установи FiveM", text: "FiveM — официальный клиент для многопользовательских RP-серверов GTA V. Бесплатный.", color: "var(--blue)" },
                 { step: 3, title: "Подключись к DezeRP", text: 'После установки FiveM найди сервер «DezeRP» в списке или введи IP вручную.', color: "var(--red)" },
-                { step: 4, title: "Пройди регистрацию персонажа", text: "В игре пройди стартовую регистрацию персонажа и выбери фракцию.", color: "var(--blue)" },
+                { step: 4, title: "Зарегистрируй персонажа", text: null, color: "var(--blue)" },
               ].map((s, i) => (
                 <div key={s.step} className="flex gap-4 p-5 animate-fade-in-up card-hover"
                   style={{ background: "var(--surface)", border: "1px solid rgba(255,255,255,0.05)", animationDelay: `${i * 0.1}s`, opacity: 0 }}>
@@ -541,9 +577,30 @@ export default function Index() {
                     style={{ background: `${s.color}18`, border: `1px solid ${s.color}40`, color: s.color, fontFamily: "Oswald" }}>
                     {s.step}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-white font-semibold mb-1" style={{ fontFamily: "Oswald", fontSize: "1.1rem" }}>{s.title}</h3>
-                    <p className="text-gray-400 text-sm" style={{ lineHeight: 1.65 }}>{s.text}</p>
+                    {s.text ? (
+                      <p className="text-gray-400 text-sm" style={{ lineHeight: 1.65 }}>{s.text}</p>
+                    ) : (
+                      <div>
+                        <p className="text-gray-400 text-sm mb-3" style={{ lineHeight: 1.65 }}>Выбери удобный способ регистрации персонажа:</p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider transition-all"
+                            style={{ fontFamily: "Oswald", background: "rgba(37,99,235,0.15)", border: "1px solid rgba(37,99,235,0.4)", color: "#60a5fa", cursor: "pointer" }}
+                            onClick={() => openAuth("register")}
+                          >
+                            🌐 На сайте
+                          </button>
+                          <div
+                            className="flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider"
+                            style={{ fontFamily: "Oswald", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}
+                          >
+                            🎮 В игре — при первом входе
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

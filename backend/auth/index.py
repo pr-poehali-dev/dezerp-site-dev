@@ -41,20 +41,21 @@ def handler(event: dict, context) -> dict:
         if len(password) < 6:
             return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Пароль минимум 6 символов"})}
 
+        gender = (body.get("gender") or "").strip()
         pw_hash = hash_password(password)
         conn = get_conn()
         cur = conn.cursor()
         try:
             cur.execute(
-                "INSERT INTO " + SCHEMA + ".users (nickname, email, password_hash) VALUES (%s, %s, %s) RETURNING id, nickname, email",
-                (nickname, email, pw_hash)
+                "INSERT INTO " + SCHEMA + ".users (nickname, email, password_hash, gender) VALUES (%s, %s, %s, %s) RETURNING id, nickname, email, gender",
+                (nickname, email, pw_hash, gender)
             )
             row = cur.fetchone()
             conn.commit()
             return {
                 "statusCode": 200,
                 "headers": CORS,
-                "body": json.dumps({"ok": True, "user": {"id": row[0], "nickname": row[1], "email": row[2]}})
+                "body": json.dumps({"ok": True, "user": {"id": row[0], "nickname": row[1], "email": row[2], "gender": row[3]}})
             }
         except Exception as e:
             conn.rollback()

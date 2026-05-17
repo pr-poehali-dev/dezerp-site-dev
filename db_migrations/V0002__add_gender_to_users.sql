@@ -1,0 +1,1 @@
+ALTER TABLE t_p11831203_dezerp_site_dev.users ADD COLUMN IF NOT EXISTS gender VARCHAR(10) DEFAULT '';
